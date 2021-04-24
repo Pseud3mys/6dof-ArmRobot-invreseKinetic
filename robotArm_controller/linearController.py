@@ -87,7 +87,9 @@ def move_cartesian(start_position, end_position):
     start_position = np.array(start_position)
     end_position = np.array(end_position)
     if (start_position == end_position).all():
-        return [], 0, 0
+        end_position[1] = end_position[1] % 360
+        end_position[2] = end_position[2] % 360
+        return [], end_position, 0, 0
 
     axis = linear(start_position, end_position)
     # choisie entre truc en cm ou truc en degrée
@@ -100,15 +102,20 @@ def move_cartesian(start_position, end_position):
         angles_array, nbr_position, theorical_time = smooth_1axis(0, axis.delta_angle, config.angular_maxAcceleration,
                                                                   config.angular_maxSpeed)
         k_array = list(map(lambda l: axis.k_max * l / axis.delta_angle, angles_array))
-    positions_array = list(map(axis.get_point, k_array))
 
-    return positions_array, nbr_position, theorical_time
+    positions_array = list(map(axis.get_point, k_array))
+    # make sur that the las value if equal to input, and change 360° to 0°
+    end_position[1] = end_position[1] % 360
+    end_position[2] = end_position[2] % 360
+    positions_array[-1] = end_position
+
+    return positions_array, end_position, nbr_position, theorical_time
 
 
 # return array of [Alpha0, Beta0, Rot0, Alpha1, Rot1]
 def move_angular(start_position, end_position):
-    positions_array, nbr_position, theorical_time = move_cartesian(start_position, end_position)
+    positions_array, end_position, nbr_position, theorical_time = move_cartesian(start_position, end_position)
     angles_array = []
     for pos in positions_array:
         angles_array.append(IKsolver.cartesian2angular(pos[0], pos[1], pos[2]))
-    return angles_array
+    return angles_array, end_position, nbr_position, theorical_time
