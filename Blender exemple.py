@@ -103,17 +103,13 @@ def delete_keys():
 
 def line(position):
     global Actual_Position, Actual_Key
-    positions, nbr_moves, time = linearController.move_cartesian(Actual_Position, position)
+    positions, end_position, nbr_moves, time = linearController.move_cartesian(Actual_Position, position)
     print("from", Actual_Position, "to", position, "take %d moves and %s seconds." % (nbr_moves, round(time, 2)))
     for pos in positions:
-        print(pos[1])
         move_robot(pos)
         Actual_Key += 1
         key(Actual_Key)
-    Actual_Position = position
-    # angle need to be between -359 and 359:
-    Actual_Position[1] = Actual_Position[1] % 360
-    Actual_Position[2] = Actual_Position[2] % 360
+    Actual_Position = end_position
 
 
 delete_keys()
